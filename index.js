@@ -1,6 +1,7 @@
 //librerias para el servidor
 const express = require('express');
 const http = require('http');
+const cors = require('cors');
 
 //api de clima
 const clima = require('./clima');
@@ -10,67 +11,46 @@ const services = require('./services');
 const app = express();
 const socketIO = require('socket.io');
 let server = http.createServer(app);
+let io = socketIO(server);
+
+//routas para el mapa
+const router = require('./routes/routes');
 
 const puerto = 3001;
 
-let io = socketIO(server);
 
-app.get('/redis', (req, resp) =>{
-    const {redis} = services;
-    redis.hset("coord", "field1", "Hello");
-    redis.hset("coord", "field2", "Hello1");
-    redis.hset("coord", "field3", "Hello2");
+app.use(cors());
+app.use('/',router(services));
 
-    redis.hgetall('coord',(err,reply)=>{
-        if (err) {
-            return resp.json({
-                err
-            });
-        }
-        resp.json({
-            resp: reply
+io.on('connection', socket => {
+    console.log('usuario conectado');
+    socket.on('disconnect',()=>{
+        console.log('usuario desconectado');
+    });
+    
+    socket.on('cargarClimas',  (mensaje, callback) => {        
+        console.log('cargando climas');
+        clima(services).consultarClimas(climas=>{
+            callback(climas);
+            console.log('resultado de carga ', climas);
         });
-
-    }); 
-
-    // redis.lpush('coordenadas','field1','Hello');
-    // redis.lpush('coordenadas','field2','Hello1');
-    // redis.lpush('coordenadas','field3','Hello2');
-
-    // redis.lrange('coordenadas',0,100,(err, reply) => {
-    //     return resp.json({
-    //         consulta: reply
-    //     })
-    // });   
+    });
     
 });
 
 
-app.get('/clima',(req,res)=>{
-   clima(services).consultarClimas().then(
-        climas => {
-            return( 
-                res.json({
-                    climas: climas
-                })
-             )
-        }
-    )
-    
-    // .cath( err => {
-    //     return(
-    //         res.json({
-    //             err
-    //         })
-    //     )
-    // });   
 
-})
 
 
 server.listen(puerto, (error)=>{
     if (error) throw new Error(error);
+    clima(services).cargarData();
     console.log(`servidor corriendo en el puerto ${puerto}`);
+
+    const {redis} = services;
+    //console.log(redis);
+    //redis. ('api.errors',0,10);
+
 });
 
 //clima(services).consultarClimas();
