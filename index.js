@@ -12,6 +12,7 @@ const app = express();
 const socketIO = require('socket.io');
 let server = http.createServer(app);
 let io = socketIO(server);
+const path = require('path');
 
 //routas para el mapa
 const router = require('./routes/routes');
@@ -20,6 +21,12 @@ const puerto = 3001;
 
 app.use(cors());
 app.use('/',router(services));
+
+//configuracion del front
+app.use(express.static(__dirname + '/public'));
+app.get('*', (req,res) =>{
+    res.sendFile(path.join(__dirname+'/public/index.html'));
+});
 
 //Configuracion del socket que enviara la data al front
 io.on('connection', socket => {
@@ -32,7 +39,6 @@ io.on('connection', socket => {
         console.log('cargando climas');
         clima(services).consultarClimas(climas=>{
             callback(climas);
-            console.log('resultado de carga ', climas);
         });
     });
     
