@@ -17,7 +17,7 @@ const path = require('path');
 //routas para el mapa
 const router = require('./routes/routes');
 //puerto del servidor
-const puerto = 3001;
+const puerto = process.env.PORT || 3001;
 
 app.use(cors());
 app.use('/',router(services));

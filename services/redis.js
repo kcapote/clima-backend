@@ -1,8 +1,5 @@
 const redis = require("redis");
-const instance = redis.createClient({
-    host: '172.17.0.2',
-    port: 6379
-});
+const instance = redis.createClient(process.env.REDIS_URL);
 
 module.exports = instance;
 

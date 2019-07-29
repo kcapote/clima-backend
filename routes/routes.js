@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const clima = require('../clima');
 const handlerError = require('../errors/handler-error');
-const path = require('path');
 
 module.exports = (services) => {
     
